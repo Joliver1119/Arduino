@@ -1,0 +1,133 @@
+/*
+  Rutina de velocidad del motor
+    Lee el potenciometro en el pin 0 (A0), lo convierte a voltaje, e imprime el resultado en el monitor serial.
+    Conecte el pin central del potenciometro al pin A0, y los pines de los extremos a +5V y tierra.
+    motorPin: No. del pin donde se encuentra el motor conectado
+    sensorValue: almacena la lectura del potenciometro
+    velMotor: sensorValue/4, es lo que se envía al motor
+  Rutina de frecuencia de los LEDs
+    Lee el potenciometro en el pin 1 (A1)
+    frecLED: Lectura del potenciometro de frecuencia del LED
+    interval: el tiempo que tarda el LED en hacer cambio de estado
+    
+ */
+int motorPin = 3;
+unsigned long interval=1000;  // the time we need to wait
+unsigned long previousMillis=0; // millis() returns an unsigned long.
+int sensorValue = 0;
+int velMotor = 0;
+unsigned long frecLED = 0.0;
+boolean controla = true;
+int lectura = 0;
+
+
+// la rutina setup corre cuando oprime reset:
+void setup() {
+  // inicia comunicación serial a 9600 bits por segundo:
+  Serial.begin(9600); 
+  while (! Serial);
+  
+  // setup para el motor
+  pinMode (motorPin, OUTPUT);
+
+  // setup para los LEDS
+  pinMode(13, OUTPUT);
+  digitalWrite(13, LOW);
+  
+}
+
+// inicia rutina por siempre
+void loop() {
+
+  // inicia rutina de lectura del celular
+  
+if(Serial.available()>0){         //si el puerto serie está habilitado
+      lectura = Serial.read();   //lee lo que llega por el puerto serie
+}
+// Revisa primero el slider del motor
+  if(lectura== 's'){
+    sensorValue = 0;
+  }
+  if(lectura== 't'){
+    sensorValue = 192;
+  }
+  if(lectura== 'u'){
+    sensorValue = 320;
+  }
+  if(lectura== 'v'){
+    sensorValue = 448;
+  }
+  if(lectura== 'w'){
+    sensorValue = 576;
+  }
+  if(lectura== 'x'){
+    sensorValue = 704;
+  }
+  if(lectura== 'y'){
+    sensorValue = 832;
+  }
+  if(lectura== 'z'){
+    sensorValue = 1023;
+  }
+
+//Revisa ahora el slider de los LEDs
+  if(lectura== '1'){
+    frecLED = 0.0;
+  }
+  if(lectura== '2'){
+    frecLED = 192.0;
+  }
+  if(lectura== '3'){
+    frecLED = 320.0;
+  }
+  if(lectura== '4'){
+    frecLED = 448.0;
+  }
+  if(lectura== '5'){
+    frecLED = 576.0;
+  }
+  if(lectura== '6'){
+    frecLED = 704.0;
+  }
+  if(lectura== '7'){
+    frecLED = 832.0;
+  }
+  if(lectura== '8'){
+    frecLED = 1023.0;
+  }
+
+//Revisa quién tiene el control si el celular o los botones
+  if(lectura== 'a'){
+    controla = true;
+  }
+  if(lectura== 'b'){
+    controla = false;
+  }
+// Si el control lo tienen los botones va a leer los potenciometros del motor y LED
+  if(controla== false){
+    sensorValue = analogRead(A0);
+    frecLED = analogRead(A1);
+  }
+  // inicia rutina para control del motor
+  // read the input on analog pin 0:
+  // ojo aqui int sensorValue = analogRead(A0);
+  // Convierte la lectura análoga que va de 0 to 255:
+  int velMotor = sensorValue / 4.0;
+  analogWrite(motorPin, velMotor);
+  // imprime el valor que lee:
+  Serial.println("Motor: ");
+  Serial.println(velMotor);
+  // termina rutina para control del motor
+
+  // inicia rutina para control del LED
+  // unsigned long frecLED = analogRead(A1);
+ Serial.println("LED: ");
+ Serial.println(frecLED);
+ interval = (1023-frecLED) * 1,35;
+ // Nothing will change until millis() increments by 1000
+ if ((unsigned long)(millis() - previousMillis) >= interval) {
+  previousMillis = millis();
+  digitalWrite(13, !digitalRead(13));  // Ooooh magic toggle code!
+ }
+  
+}
